@@ -1,0 +1,45 @@
+.custom-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f2f2f2;
+  color: #333;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.custom-link:hover,
+.custom-link.active {
+  background-color: #d9d9d9;
+  color: #000;
+}
+
+.app-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  height: 64px; /* Puedes ajustar este valor */
+}
+
+.main {
+  flex: 1;
+  overflow: hidden;
+}
+
+.alert {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.alert.show {
+  opacity: 1;
+  transform: translateY(0);
+}
