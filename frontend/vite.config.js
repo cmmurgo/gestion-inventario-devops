@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
       'process.env': env,
     },
     build: {
-      outDir: 'build', // <- Esto hace que Vite genere la carpeta 'build'
+      outDir: 'dist', // <- Esto hace que Vite genere la carpeta 'build' CAMBIADO POR DIST
     },
   };
 });
