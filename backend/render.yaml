@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: gestion-inventario-backend
+    env: node
+    plan: free
+    branch: main
+    repo: https://github.com/cmmurgo/gestion-inventario-devops-yaml
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: "3000"
+      - key: DB_HOST
+        value: ep-orange-art-a4caig5h-pooler.us-east-1.aws.neon.tech
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_USER
+        value: neondb_owner
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        value: neondb
+      - key: DB_SSL
+        value: "true"
+      - key: SSL_MODE
+        value: require
+      - key: JWT_SECRET
+        value: codecrafters
+      - key: NODE_ENV
+        value: production
+      - key: EMAIL_USER
+        value: arduinoiot2020@gmail.com
+      - key: gfxc nwhn kjgd xvmu
+        sync: false
