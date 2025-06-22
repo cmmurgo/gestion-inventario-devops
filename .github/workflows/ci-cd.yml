@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout código
+    - name: Checkout del código
       uses: actions/checkout@v3
 
-    - name: Set up Docker
+    - name: Configurar Docker
       uses: docker/setup-buildx-action@v3
 
     - name: Login a Docker Hub
@@ -23,12 +23,29 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build de imagen Docker
-      run: docker build -t ${{ secrets.DOCKER_USERNAME }}/mi-app:latest .
-
-    - name: Correr tests (ejemplo con Python)
+    # Construcción imagen backend (Node.js)
+    - name: Build imagen backend
       run: |
-        docker run --rm ${{ secrets.DOCKER_USERNAME }}/mi-app:latest pytest tests/
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/backend-inventario:latest ./backend
 
-    - name: Push de imagen a Docker Hub
-      run: docker push ${{ secrets.DOCKER_USERNAME }}/mi-app:latest
+    # Construcción imagen frontend (React)
+    - name: Build imagen frontend
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend-inventario:latest ./frontend
+
+    # Correr tests del backend (Node.js)
+    - name: Correr tests del backend
+      run: |
+        docker run --rm ${{ secrets.DOCKER_USERNAME }}/backend-inventario:latest npm test
+
+    # Correr tests del frontend (React)
+    - name: Correr tests del frontend
+      run: |
+        docker run --rm ${{ secrets.DOCKER_USERNAME }}/frontend-inventario:latest npm test -- --watchAll=false
+
+    # Push de imágenes a Docker Hub
+    - name: Push backend
+      run: docker push ${{ secrets.DOCKER_USERNAME }}/backend-inventario:latest
+
+    - name: Push frontend
+      run: docker push ${{ secrets.DOCKER_USERNAME }}/frontend-inventario:latest
