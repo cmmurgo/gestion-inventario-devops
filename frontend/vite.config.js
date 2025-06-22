@@ -16,3 +16,4 @@ export default defineConfig(({ mode }) => {
     envPrefix: 'VITE_', // asegura que solo se usen variables con ese prefijo
   };
 });
+
