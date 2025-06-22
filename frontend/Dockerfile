@@ -7,6 +7,7 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 3000  # Cambiar según puerto que use tu dev server (3000 es común)
+# Cambiar según puerto que use tu dev server (3000 es común)
+EXPOSE 3000
 
 CMD ["npm", "run", "dev"]
