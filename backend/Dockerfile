@@ -13,7 +13,8 @@ FROM node:18-slim
 
 WORKDIR /app
 
-COPY --from=build /app .
+COPY --from=build /app ./
+RUN npm install --omit=dev
 
 EXPOSE 3000
 
