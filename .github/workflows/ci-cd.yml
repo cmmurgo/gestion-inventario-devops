@@ -19,7 +19,7 @@ jobs:
         run: |
           cd backend
           npm ci    # Instalación limpia para entorno CI
-          npm run test -- --coverage  # Ejecuta las pruebas automatizadas y genera informe en /coverage
+          npm run test   # Ejecuta las pruebas automatizadas y genera informe en /coverage
 
       # Configurar Docker
       - name: Configurar Docker
