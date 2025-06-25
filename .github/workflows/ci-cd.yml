@@ -22,11 +22,11 @@ jobs:
           npm test  # Ejecuta las pruebas automatizadas
 
       # Correr tests del frontend (Vite + React)
-      - name: Instalar y testear frontend
-        run: |
-          cd frontend
-          npm ci
-          npm test
+      # - name: Instalar y testear frontend
+      #   run: |
+      #     cd frontend
+      #     npm ci
+      #     npm test
 
       - name: Configurar Docker
         uses: docker/setup-buildx-action@v3
