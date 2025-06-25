@@ -1,6 +1,7 @@
 # Nombre del workflow
 name: CI/CD Temporal
 
+# Disparadores: se ejecuta en push y pull requests a la rama especificada
 on:
   push:
     branches: [ "merge-test-fernandoQA" ]
@@ -9,19 +10,24 @@ on:
 
 jobs:
   build-and-deploy:
+    # El tipo de máquina virtual en la que se ejecutará el job
     runs-on: ubuntu-latest
     
-    # -- SECCIÓN DE TEST MODIFICADA --
-   
+    # Define un contenedor de servicio para la base de datos PostgreSQL
+    # Esto permite que las pruebas de backend se ejecuten contra una base de datos real y aislada.
     services:
       postgres:
         image: postgres:14-alpine
+        # Variables de entorno para inicializar el contenedor de la base de datos
         env:
-          POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.TEST_DB_DATABASE }}
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: testdb
+        # Mapea el puerto del contenedor al host para que los pasos del job puedan acceder a él
         ports:
           - 5432:5432
+        # Opciones de chequeo de salud para asegurar que la base de datos esté lista
+        # antes de que los pasos que dependen de ella comiencen a ejecutarse.
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -29,56 +35,66 @@ jobs:
           --health-retries 5
 
     steps:
+      # 1. Checkout del código del repositorio
       - name: Checkout del código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4 # Actualizado a la última versión
 
+      # 2. Configuración del entorno de Node.js
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+          # Habilita el caché para los paquetes de npm gestionado por setup-node
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
 
-      # -- SECCIÓN DE TEST MODIFICADA --
-      # Este paso se conecta a la base de datos usando los mismos secretos definidos en el servicio.
+      # 3. Instalar dependencias y correr tests del backend
       - name: Instalar dependencias y testear backend
+        # Variables de entorno para la conexión a la base de datos del servicio
         env:
+          # Se conecta al servicio 'postgres' definido arriba.
+          # GitHub Actions lo hace disponible en el host 'localhost' o 'postgres'.
           DB_HOST: localhost
-          DB_PORT: 5432
-          DB_USER: ${{ secrets.TEST_DB_USER }}
-          DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
-          DB_DATABASE: ${{ secrets.TEST_DB_DATABASE }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          DB_PORT: 5432 # El puerto mapeado en la definición del servicio
+          DB_USER: ${{ job.services.postgres.env.POSTGRES_USER }}
+          DB_PASSWORD: ${{ job.services.postgres.env.POSTGRES_PASSWORD }}
+          DB_DATABASE: ${{ job.services.postgres.env.POSTGRES_DB }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }} # Este secreto sí es necesario
         run: |
           cd backend
-          npm ci
-          npm run test
+          npm ci          # Usa 'npm ci' para una instalación limpia y reproducible
+          npm run test    # Ejecuta las pruebas automatizadas
 
-      # -- SECCIÓN DE DOCKER
+      # 4. Configurar Docker Buildx (necesario para build-push-action)
       - name: Configurar Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # 5. Login en Docker Hub
       - name: Login a Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      # 6. Construcción y Push de la imagen del backend a Docker Hub
       - name: Build y Push de imagen backend
         uses: docker/build-push-action@v5
         with:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
-       
           tags: ${{ secrets.DOCKER_USERNAME }}/backend-inventario:latest
 
+      # 7. Construcción y Push de la imagen del frontend a Docker Hub
       - name: Build y Push de imagen frontend
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-         
           tags: ${{ secrets.DOCKER_USERNAME }}/frontend-inventario:latest
+      
+      # Nota: El despliegue a producción/staging no forma parte de este workflow.
+      # Por ejemplo, el despliegue a Vercel podría estar configurado directamente
+      # en Vercel para que se active al hacer push a la rama 'main'.
 
