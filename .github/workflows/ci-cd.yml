@@ -1,10 +1,10 @@
-name: CI/CD Pipeline
+name: CI/CD Temporal
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "merge-test-fernandoQA" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "merge-test-fernandoQA" ]
 
 jobs:
   build-and-deploy:
