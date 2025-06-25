@@ -1,7 +1,5 @@
-# Nombre del workflow
 name: CI/CD Pipeline
 
-# Se ejecuta en push y pull requests a la rama de pruebas
 on:
   push:
     branches: [ "merge-test-fernandoQA" ]
@@ -11,89 +9,43 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
-    # Define un contenedor de servicio con PostgreSQL para las pruebas del backend.
-    # Esto asegura que los tests se ejecuten en un entorno limpio y consistente.
-    services:
-      postgres:
-        image: postgres:14-alpine
-        # Se usan secretos para las credenciales de la base de datos de prueba
-        env:
-          POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.TEST_DB_DATABASE }}
-        ports:
-          - 5432:5432
-        # Opciones para asegurar que la BD esté lista antes de correr los tests
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
-      # 1. Checkout del código del repositorio
       - name: Checkout del código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      # 2. Configuración de Node.js con caché para acelerar instalaciones
-      - name: Configurar Node.js y caché de NPM
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-          # La clave del caché se basa en los archivos package-lock.json de ambos proyectos
-          cache-dependency-path: '**/package-lock.json'
-
-      # 3. Instalar dependencias y correr tests del backend contra la BD del servicio
       - name: Instalar y testear backend
-        env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_USER: ${{ secrets.TEST_DB_USER }}
-          DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
-          DB_DATABASE: ${{ secrets.TEST_DB_DATABASE }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
-          echo "--- Instalando y testeando Backend ---"
           cd backend
           npm ci
-          npm run test
+          npm test
 
-      # 4. Instalar dependencias y correr tests del frontend
       - name: Instalar y testear frontend
         run: |
-          echo "--- Instalando y testeando Frontend ---"
           cd frontend
           npm ci
           npm test
 
-      # 5. Configurar Docker Buildx
-      - name: Configurar Docker Buildx
+      - name: Configurar Docker
         uses: docker/setup-buildx-action@v3
 
-      # 6. Login en Docker Hub
       - name: Login a Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 7. Construir y subir la imagen del backend a Docker Hub en un solo paso
-      - name: Build y Push de imagen backend
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend
-          file: ./backend/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/backend-inventario:latest
+      - name: Build imagen backend
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/backend-inventario:latest ./backend
 
-      # 8. Construir y subir la imagen del frontend a Docker Hub en un solo paso
-      - name: Build y Push de imagen frontend
-        uses: docker/build-push-action@v5
-        with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/frontend-inventario:latest
+      - name: Build imagen frontend
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend-inventario:latest ./frontend
 
+      - name: Push imagen backend
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/backend-inventario:latest
+
+      - name: Push imagen frontend
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/frontend-inventario:latest
+
+      # El despliegue de la app se realiza automáticamente en Vercel.
+      # Como esto corre en merge-test-fernandoQA, no debería disparar el deploy productivo.
