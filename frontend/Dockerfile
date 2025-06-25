@@ -1,4 +1,4 @@
-# Etapa 1: Build
+# Etapa de build
 FROM node:18 AS build
 
 WORKDIR /app
@@ -9,16 +9,16 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# Etapa 2: Servir con Nginx
+# Etapa de producción con Nginx
 FROM nginx:stable-alpine
 
-# Copiar configuración por defecto de Vite para Nginx
+# Copiar archivos compilados al directorio público de Nginx
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Quitar los archivos por defecto de Nginx
+# Eliminar configuración por defecto de Nginx
 RUN rm /etc/nginx/conf.d/default.conf
 
-# Agregar un archivo de configuración custom para que funcione con React Router DOM
+# Copiar configuración personalizada (para React Router DOM, etc.)
 COPY nginx.conf /etc/nginx/conf.d
 
 EXPOSE 80
