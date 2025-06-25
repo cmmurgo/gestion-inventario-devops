@@ -1,10 +1,12 @@
 {
   "name": "gestion-inventario",
   "version": "1.0.0",
-  "description": "\"# gestion-inventario\"",
+  "description": "# gestion-inventario",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"No tests yet\""
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -27,5 +29,9 @@
     "nodemailer": "^7.0.3",
     "pg": "^8.15.6"
   },
-  "homepage": "https://github.com/cmmurgo/gestion-inventario#readme"
+  "homepage": "https://github.com/cmmurgo/gestion-inventario#readme",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.1.1"
+  }
 }

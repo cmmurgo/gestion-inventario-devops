@@ -16,6 +16,6 @@ WORKDIR /app
 COPY --from=build /app ./
 RUN npm install --omit=dev
 
-EXPOSE 3000
+EXPOSE 3001
 
 CMD ["npm", "start"]

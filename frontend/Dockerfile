@@ -9,16 +9,18 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# Etapa de producción
-FROM node:18-slim
+# Etapa de producción con Nginx
+FROM nginx:stable-alpine
 
-WORKDIR /app
+# Copiar archivos compilados al directorio público de Nginx
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# Solo copiamos los archivos necesarios del build
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/package*.json ./
-RUN npm install --omit=dev
+# Eliminar configuración por defecto de Nginx
+RUN rm /etc/nginx/conf.d/default.conf
 
-EXPOSE 4173
+# Copiar configuración personalizada (para React Router DOM, etc.)
+COPY nginx.conf /etc/nginx/conf.d
 
-CMD ["npx", "vite", "preview", "--port", "4173", "--host"]
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
