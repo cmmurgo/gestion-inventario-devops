@@ -29,7 +29,17 @@ jobs:
       - name: Checkout del código
         uses: actions/checkout@v3
 
-      - name: Instalar y testear backend
+      - name: Instalar dependencias del backend
+        run: |
+          cd backend
+          npm ci
+
+      - name: Inicializar estructura de la base de datos
+        run: |
+          sudo apt-get install -y postgresql-client
+          PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h localhost -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -f ./backend/db/schema.sql
+
+      - name: Ejecutar tests del backend
         env:
           DB_HOST: localhost
           DB_PORT: 5432
@@ -40,9 +50,7 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           NODE_ENV: ${{ secrets.NODE_ENV }}
         run: |
-          echo "--- Ejecutando tests del backend ---"
           cd backend
-          npm ci
           npm run test -- --coverage
 
       - name: Configurar Docker
