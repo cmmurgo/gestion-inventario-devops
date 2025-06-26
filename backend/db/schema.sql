@@ -12,8 +12,9 @@ CREATE TABLE usuario (
 );
 
 -- Insertar los datos
-INSERT INTO usuario (id,nombre, email, clave, rol, fecha_baja) VALUES
-(1, 'Marcelo Murgo','cmmurgo@gmail.com', '$2b$10$Dg/pOEjkYFP2F5vtFJugped7tRoaUoVkHAiG/JM1wD.N/gaQHNHOC', 'admin', null);
+
+INSERT INTO usuario (nombre, email, clave, rol, fecha_baja) VALUES
+('Marcelo Murgo','cmmurgo@gmail.com', '$2b$10$Dg/pOEjkYFP2F5vtFJugped7tRoaUoVkHAiG/JM1wD.N/gaQHNHOC', 'admin', null);
 
 CREATE TABLE cliente (
     id SERIAL PRIMARY KEY,
