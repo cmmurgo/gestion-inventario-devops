@@ -60,7 +60,7 @@ export default function Home() {
       </div>
 
       <div className="text-center">
-        <h5 className="mb-3">Cantidad de ventas por mes</h5>
+        <h5 className="mb-3">Cantidad de ventas por mes:</h5>
         <img
           src={graficoImg}
           alt="Gráfico de ventas"
