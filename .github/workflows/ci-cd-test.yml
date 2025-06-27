@@ -1,13 +1,13 @@
-name: CI/CD Pipeline
+name: CI - Test & Docker Push (ci-test)
 
 on:
   push:
-    branches: [ "merge-test-fernandoQA" ]
+    branches: [ "ci-test" ]
   pull_request:
-    branches: [ "merge-test-fernandoQA" ]
+    branches: [ "ci-test" ]
 
 jobs:
-  build-and-deploy:
+  test-and-build:
     runs-on: ubuntu-latest
 
     services:
@@ -29,17 +29,18 @@ jobs:
       - name: Checkout del código
         uses: actions/checkout@v3
 
-      - name: Instalar dependencias del backend
+      - name: Instalar dependencias backend
         run: |
           cd backend
           npm ci
 
-      - name: Inicializar estructura de la base de datos
+      - name: Inicializar base de datos
         run: |
           sudo apt-get install -y postgresql-client
-          PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h localhost -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -f ./backend/db/schema.sql
+          PGPASSWORD=${{ secrets.DB_PASSWORD }} \
+          psql -h localhost -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -f ./backend/db/schema.sql
 
-      - name: Ejecutar tests del backend
+      - name: Ejecutar tests backend
         env:
           DB_HOST: localhost
           DB_PORT: 5432
@@ -62,14 +63,10 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build imagen backend
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/backend-inventario:merge-test-fernandoQA ./backend
+      - name: Build & Push imágenes con tag ci-test
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/backend-inventario:ci-test ./backend
+          docker push ${{ secrets.DOCKER_USERNAME }}/backend-inventario:ci-test
 
-      - name: Build imagen frontend
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend-inventario:merge-test-fernandoQA ./frontend
-
-      - name: Push imagen backend
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/backend-inventario:merge-test-fernandoQA
-
-      - name: Push imagen frontend
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/frontend-inventario:merge-test-fernandoQA
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend-inventario:ci-test ./frontend
+          docker push ${{ secrets.DOCKER_USERNAME }}/frontend-inventario:ci-test
